@@ -26,6 +26,15 @@ function navSubmitClick() {
 //event listener added to the submit tag
 $submitStory.on("click", navSubmitClick);
 
+// favorites click functionality
+
+function navFavorites() {
+  hidePageComponents();
+  putFavoritesOnPage();
+}
+
+$navFavorites.on("click", navFavorites);
+
 /** Show login/signup on click on "login" */
 
 function navLoginClick(evt) {

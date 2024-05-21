@@ -25,6 +25,7 @@ function generateStoryMarkup(story) {
   const hostName = story.getHostName();
   return $(`
       <li id="${story.storyId}">
+      ${getStar(story, currentUser)}
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
@@ -74,3 +75,50 @@ async function storySubmit(evt) {
 }
 
 $submitForm.on("submit", storySubmit);
+
+//favorites on page
+
+function getStar(story, user) {
+  const isFavorite = user.isFavorite(story);
+  const starType = isFavorite ? "fas" : "far";
+  return `
+      <span class="star">
+        <i class="${starType} fa-star"></i>
+      </span>`;
+}
+//put the favorites list on page linked to nav script
+function putFavoritesOnPage() {
+  //start empty on click
+  $favoritedStories.empty();
+  //loop through and generate html for the story/append
+  for (let story of currentUser.favorites) {
+    const $story = generateStoryMarkup(story);
+    $favoritedStories.append($story);
+  }
+}
+
+$favoritedStories.show();
+
+/** Handle favorite/un-favorite a story */
+
+async function toggleStoryFavorite(evt) {
+  console.debug("toggleStoryFavorite");
+
+  const $tgt = $(evt.target);
+  const $closestLi = $tgt.closest("li");
+  const storyId = $closestLi.attr("id");
+  const story = storyList.stories.find((s) => s.storyId === storyId);
+
+  // see if the item is already favorited (checking by presence of star)
+  if ($tgt.hasClass("fas")) {
+    // currently a favorite: remove from user's fav list and change star
+    await currentUser.removeFavorite(story);
+    $tgt.closest("i").toggleClass("fas far");
+  } else {
+    // currently not a favorite: do the opposite
+    await currentUser.addFavorite(story);
+    $tgt.closest("i").toggleClass("fas far");
+  }
+}
+
+$storiesLists.on("click", ".star", toggleStoryFavorite);
