@@ -21,7 +21,7 @@
 
 .story-link {
   color: black;
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: normal;
   margin: 18px 0;
 }
@@ -32,8 +32,11 @@
 
 .story-author {
   margin-left: 2em;
+  color: green;
 }
 
 .story-user {
   display: block;
+  margin-left: 2em;
+  color: orange
 }

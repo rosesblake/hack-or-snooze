@@ -17,23 +17,32 @@ $body.on("click", "#nav-all", navAllStories);
 //show story submit on click
 
 function navSubmitClick() {
-  //hide Page Components
-  hidePageComponents();
-  //show submit form and all stories
-  $submitForm.show();
-  $allStoriesList.show();
-}
+    // If it doesn't have the class 'visible', hide other components and show $submitForm and $allStoriesList
+    hidePageComponents();
+    $submitForm.show();
+    $allStoriesList.hide();
+  }
+
 //event listener added to the submit tag
 $submitStory.on("click", navSubmitClick);
 
-// favorites click functionality
-
+// favorites click functionality on nav bar
 function navFavorites() {
   hidePageComponents();
   putFavoritesOnPage();
 }
 
 $navFavorites.on("click", navFavorites);
+
+//nav my stories
+
+function navMyStories(){
+  hidePageComponents();
+  putMyStoriesOnPage();
+  $myStories.show();
+}
+
+$body.on('click', '#my-stories-nav', navMyStories)
 
 /** Show login/signup on click on "login" */
 
@@ -42,6 +51,8 @@ function navLoginClick(evt) {
   hidePageComponents();
   $loginForm.show();
   $signupForm.show();
+  //hide the main nav bar while on login page
+  $mainNav.hide();
 }
 
 $navLogin.on("click", navLoginClick);

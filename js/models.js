@@ -24,7 +24,7 @@ class Story {
 
   getHostName() {
     // UNIMPLEMENTED: complete this function!
-    return "hostname.com";
+    return new URL(this.url).host;
   }
 }
 
@@ -85,8 +85,48 @@ class StoryList {
     //add story to beginning of this.stories
     this.stories.unshift(story);
     //also add it to the user's stories
+    user.ownStories.unshift(story);
+    //repopulate
+    putStoriesOnPage();
     return story;
   }
+
+  async removeStory(user, storyId) {
+    const token = user.loginToken;
+  
+    // Remove the story from the server
+    await axios({
+      url: `${BASE_URL}/stories/${storyId}`,
+      method: "DELETE",
+      data: { token }
+    });
+  
+    // Remove the story from the list of stories
+    this.stories = this.stories.filter(function(story) {
+      return story.storyId !== storyId;
+    });
+  
+    // Find the index of the story in the user's own stories
+    const ownStoryIndex = user.ownStories.findIndex(function(s) {
+      return s.storyId === storyId;
+    });
+  
+    if (ownStoryIndex !== -1) {
+      // Remove the story from the user's own stories if found
+      user.ownStories.splice(ownStoryIndex, 1);
+    }
+  
+    // Find the index of the story in the user's favorites
+    const favStoryIndex = user.favorites.findIndex(function(s) {
+      return s.storyId === storyId;
+    });
+  
+    if (favStoryIndex !== -1) {
+      // Remove the story from the user's favorites if found
+      user.favorites.splice(favStoryIndex, 1);
+    }
+  }
+  
 }
 
 /******************************************************************************
@@ -199,40 +239,43 @@ class User {
       return null;
     }
   }
-  /** Add a story to the list of user favorites and update the API
-   * - story: a Story instance to add to favorites
-   */
+
+  //add story to list of favorites and update api
 
   async addFavorite(story) {
     this.favorites.push(story);
-    await this._addOrRemoveFavorite("add", story);
+    await this.toggleFavorite("add", story);
   }
 
-  /** Remove a story to the list of user favorites and update the API
-   * - story: the Story instance to remove from favorites
-   */
+  //remove story from favorites
 
   async removeFavorite(story) {
-    this.favorites = this.favorites.filter((s) => s.storyId !== story.storyId);
-    await this._addOrRemoveFavorite("remove", story);
+    // Remove the story from the favorites list by filtering out the story with the matching storyId
+    this.favorites = this.favorites.filter(function(s) {
+      return s.storyId !== story.storyId;
+    });
+    // Update api
+    await this.toggleFavorite("remove", story);
   }
+  
 
-  /** Update API with favorite/not-favorite.
-   *   - newState: "add" or "remove"
-   *   - story: Story instance to make favorite / not favorite
-   * */
+//update api favorite
 
-  async _addOrRemoveFavorite(newState, story) {
+  async toggleFavorite(newState, story) {
+    // Choose POST if adding, DELETE if removing
     const method = newState === "add" ? "POST" : "DELETE";
+    // Get the login token
     const token = this.loginToken;
+    // Make the HTTP request with axios
     await axios({
       url: `${BASE_URL}/users/${this.username}/favorites/${story.storyId}`,
       method: method,
       data: { token },
     });
   }
+  
 
-  /** Return true/false if given Story instance is a favorite of this user. */
+//return true or false if its a favorite
 
   isFavorite(story) {
     return this.favorites.some((s) => s.storyId === story.storyId);
